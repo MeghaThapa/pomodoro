@@ -1,11 +1,18 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <dashboard>
+    <div></div>
+  </dashboard>
 </template>
+<script setup>
+import { reactive } from "@vue/reactivity";
 
+import dashboard from "./views/Dashboard.vue";
+
+const requiredValues = reactive({
+  startTime: "",
+  endTime: "",
+});
+</script >
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
