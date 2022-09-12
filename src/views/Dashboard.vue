@@ -26,6 +26,7 @@
       <hr class="lineStyle" />
       <div
         class="middleContent"
+        style="display: flex; flex-direction: column"
         :style="{ 'background-color': retur.middleContainColor }"
       >
         <div class="threeBtns">
@@ -54,11 +55,13 @@
         <div style="margin-top: 0px">
           <p
             style="
-              font-size: 100px;
+              font-size: 5rem;
+              box-sizing: border-box;
+              max-width: 680px;
               font-family: cursive;
               color: white;
-              margin-top: 10px;
-              margin-bottom: 10px;
+              margin: auto;
+              margin-left: 0%;
             "
           >
             {{ hours ? hours : displayHrMin.hours }}:{{
@@ -69,23 +72,26 @@
         <div>
           <div
             @click="startButtonClick()"
-            v-if="!startStopToggle"
+            v-if="!startToggle && !stopToggle"
             class="startBtn"
             :style="{ color: retur.bgColor }"
           >
             START
           </div>
+
+          <!-- true false -->
           <div
             class="startBtn"
-            v-if="startStopToggle && !resumeToggle"
+            v-if="startToggle && !stopToggle"
             @click="stopButtonClick()"
             :style="{ color: retur.bgColor }"
           >
             STOP
           </div>
+
           <div
             class="startBtn"
-            v-if="startStopToggle && resumeToggle"
+            v-if="startToggle && stopToggle"
             @click="resumeButtonClick()"
             :style="{ color: retur.bgColor }"
           >
@@ -117,40 +123,42 @@
             "
           >
             <p style="align-items: center; margin: 0px">Task</p>
-            <div
-              type="button"
-              @click="dltShowModel"
-              class="dltBotton"
-              style="
-                width: 30px;
-                line-height: 30px;
-                position: relative;
-                margin: 0px;
-                background-color: rgba(255, 255, 255, 0.1);
-                border-radius: 4px;
-                opacity: 1;
-              "
-            >
-              <i
-                style="align-items: center"
-                class="fa-solid fa-ellipsis-vertical"
-              ></i>
-            </div>
+            <Deletetask @closeToggle="hide" @ClearAllTask="clearTaskList">
+              <template v-slot:icons>
+                <i class="fa-solid fa-ellipsis-stroke-vertical"></i>
+              </template>
+              <template v-slot:dltIcon>
+                <i class="fa-solid fa-trash-can"></i>
+              </template>
+            </Deletetask>
           </div>
           <div style="margin-bottom: 15px">
             <hr style="height: 1px; background-color: white" />
           </div>
-          
-          <!-- addTask contain ref value so task.value  addedTask.addTask.length-->
+
+          <!-- addTask contain ref value so task.value  addedTask.addTask.length task.value-->
 
           <!-- Task List -->
-          <div v-if="addedTask.addTask.length">
-            <div
-              class="task-list"
-              v-for="(task, i) in addedTask.addTask"
-              :key="i"
-            >
-              {{ task.value }}
+
+          <div
+            v-for="(task, i) in addedTask.addTask"
+            :key="i"
+            @click="removeTask(i)"
+          >
+            <div v-if="true">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+                class="task-list"
+              >
+                <p>{{ task.value }}</p>
+                <div class="check-box" label="this task will be remove">
+                  <i class="fa-sharp fa-solid fa-check"></i>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -187,26 +195,24 @@
             </div>
           </div>
         </div>
+        <SetingPage
+          :Timer="defaultTimer"
+          v-if="retur.toggle"
+          @modelClose="SettingClick"
+          @minHrsConversion="minHrsConvg"
+          @okBtnClose="timerSettingSave"
+        ></SetingPage>
+        <addTask
+          v-if="retur.addTaskToggle"
+          @closeToggle="hideAddTask"
+          @saveTask="saveTaskF"
+          @taskCancled="clearCancleTask"
+          @closeAddTask="closeAddTaskModel"
+        >
+        </addTask>
       </div>
     </div>
   </div>
-
-  <SetingPage
-    :Timer="defaultTimer"
-    v-if="retur.toggle"
-    @modelClose="SettingClick"
-    @minHrsConversion="minHrsConvg"
-    @okBtnClose="timerSettingSave"
-  ></SetingPage>
-  <addTask
-    v-if="retur.addTaskToggle"
-    @closeToggle="hideAddTask"
-    @saveTask="saveTaskF"
-    @taskCancled="clearCancleTask"
-    @closeAddTask="closeAddTaskModel"
-  >
-  </addTask>
-  <Deletetask :toggle="retur.dltToggle" @closeToggle="hide"> </Deletetask>
 </template>
 
 <script setup>
@@ -220,23 +226,47 @@ import { reactive, ref } from "@vue/reactivity";
 const addedTask = reactive({
   addTask: [],
 });
+
 //Buttons States
-const startStopToggle = ref(false);
-const resumeToggle = ref(false);
+
+//Start Buttons
+//startToggle = false
+//stopToggle = false
+
+//Resume Buttons
+//startToggle = true
+//stopToggle = false
+
+//Stop Buttons
+//stopStopToggle = true
+//stopToggle =
+
+const startToggle = ref(false);
+const stopToggle = ref(false);
+
+const taskComplete = ref(false);
+const timerStart = ref(false);
 
 const activeButton = reactive({
   pomodoroPage: true,
   shortBreakPage: false,
   longBreakPage: false,
 });
+function removeTask(i) {
+  this.addedTask.addTask.splice(i, 1);
+}
 function closeAddTaskModel(task) {
   // console.log("hellllo");
   addedTask.addTask.push(task);
   retur.addTaskToggle = false;
 }
+function clearTaskList() {
+  addedTask.addTask = [];
+  retur.dltToggle = false;
+}
 function clearCancleTask() {
-  addedTask.addTask = "";
-  closeAddTaskModel();
+  // addedTask.addTask = [];
+  retur.addTaskToggle = false;
 }
 //Color values of the pages
 const retur = reactive({
@@ -257,17 +287,34 @@ function taskAdd() {
   retur.addTaskToggle = !retur.addTaskToggle;
 }
 function resumeButtonClick() {
-  startStopToggle.value = true;
-  resumeToggle.value = false;
+  timerStart.value = true;
+   showStopButton();
   resume();
 }
+
+function showStartButton() {
+  startToggle.value = false;
+  stopToggle.value = false;
+}
+function showStopButton() {
+  startToggle.value = true;
+  stopToggle.value = false;
+}
+function showResumeButton() {
+  startToggle.value = true;
+  stopToggle.value = true;
+}
+
 function startButtonClick() {
   startTimer();
-  startStopToggle.value = true;
+  // when you click to another button when started
+  timerStart.value = true;
+  showStopButton();
 }
 function stopButtonClick() {
-  resumeToggle.value = true;
-  stop();
+  timerStart.value = true;
+  showResumeButton();
+  stop();F
 }
 
 // Setting Page Default Value
@@ -297,6 +344,7 @@ const {
   startTimer,
   hrsMinconvg,
   stop,
+  resetTimer,
   resume,
   setCountDown,
 } = timer(displayHrMin);
@@ -305,6 +353,7 @@ function dltShowModel() {
   retur.dltToggle = !retur.dltToggle;
 }
 function hide() {
+  // console.log("fghjk");
   retur.dltToggle = false;
 }
 function SettingClick() {
@@ -316,7 +365,7 @@ function minHrsConvg() {
   if (hoursValue >= 1) {
     displayHrMin.hours = hoursValue;
     displayHrMin.minutes = minutesValue;
-    console.log("Hours:", hoursValue, "Minutes:", minutesValue);
+    // console.log("Hours:", hoursValue, "Minutes:", minutesValue);
     return;
   }
   //if active page is less then 60 min or 1  hours
@@ -335,7 +384,28 @@ function activeButtonMinutes() {
   }
 }
 
+function changePageColors({ activeState, bgColor, middleContainColor }) {
+  retur.activeState = activeState;
+  retur.bgColor = bgColor;
+  retur.middleContainColor = middleContainColor;
+}
+
+function timerSettingSave() {
+  SettingClick();
+}
+
+//Short Break Buttons
 function greenColor() {
+  if (timerStart.value) {
+    if (window.confirm("Do You want to stop the timer?")) {
+      resetTimer();
+      timerStart.value = false;
+
+      // For Start Button to appear
+      startToggle.value = false;
+      stopToggle.value = false;
+    }
+  }
   changePageColors({
     activeState: "green",
     bgColor: "rgb(76,145,149)",
@@ -347,18 +417,19 @@ function greenColor() {
   activeButton.longBreakPage = false;
   minHrsConvg();
 }
-
-function changePageColors({ activeState, bgColor, middleContainColor }) {
-  retur.activeState = activeState;
-  retur.bgColor = bgColor;
-  retur.middleContainColor = middleContainColor;
-}
-
-function timerSettingSave() {
-  SettingClick();
-}
-
+//Pomodoro Break Buttons
 function redColor() {
+  if (timerStart.value) {
+    if (window.confirm("Do You want to stop the timer?")) {
+      resetTimer();
+      timerStart.value = false;
+
+      // For Start Button to appear
+      startToggle.value = false;
+      stopToggle.value = false;
+    }
+  }
+
   changePageColors({
     activeState: "red",
     bgColor: "#ff5c5c",
@@ -369,7 +440,19 @@ function redColor() {
   activeButton.longBreakPage = false;
   minHrsConvg();
 }
+
+//Long Break Buttons
 function blueColor() {
+  if (timerStart.value) {
+    if (window.confirm("Do You want to stop the timer?")) {
+      resetTimer();
+      timerStart.value = false;
+
+      // For Start Button to appear
+      startToggle.value = false;
+      stopToggle.value = false;
+    }
+  }
   changePageColors({
     activeState: "blue",
     bgColor: "rgb(69,124,163)",
@@ -389,9 +472,19 @@ function blueColor() {
   flex-direction: column;
   color: white;
 
-  width: 11.8cm;
+  max-width: 11cm;
 
-  margin-left: 7%;
+  margin: auto;
+}
+.check-box {
+  border: 1px solid transparent;
+  border-radius: 50px;
+  padding: 5px;
+}
+.check-box:hover {
+  cursor: pointer;
+  background: #ff5c5c;
+  color: white;
 }
 .task-list {
   border-left: 5px solid black;
@@ -399,8 +492,7 @@ function blueColor() {
   margin-bottom: 10px;
   background-color: white;
   color: black;
-  padding: 7px;
-  line-height: 30px;
+  padding: 5px;
   text-align: center;
   width: 96%;
 }
@@ -410,12 +502,13 @@ function blueColor() {
   opacity: 1;
 }
 .entireContent {
-  margin-left: 25%;
-  margin-right: 33%;
+  max-width: 620px;
+  margin: auto;
 }
 .startBtn {
-  width: 110px;
-  height: 15px;
+  margin-top: 20px;
+  max-width: 110px;
+  max-height: 15px;
   border: 0px;
   padding: 15px;
   font-weight: bold;
@@ -454,18 +547,18 @@ function blueColor() {
   display: flex;
   margin-left: 13%;
   height: 28px;
-  width: 350px;
+  max-width: 350px;
   border-radius: 5px;
   margin-top: 5px;
 }
 .middleContent {
   opacity: 1;
-  padding: 15px;
+  padding: 5px;
   display: flex;
   flex-direction: column;
   height: 7cm;
-  width: 11cm;
-  margin-left: 7%;
+  max-width: 11cm;
+  margin: auto;
 
   /* margin-right:25%; */
   margin-top: 50px;
@@ -485,7 +578,7 @@ function blueColor() {
 .container {
   min-height: 100vh;
   width: 100%;
-  position: absolute;
+  position: relative;
 
   box-sizing: border-box;
 

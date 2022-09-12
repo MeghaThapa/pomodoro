@@ -15,6 +15,7 @@
         <input
           v-model="saveForm"
           type="text"
+         style="line-height:25px;margin-top:0px;"
           placeholder="What are you working on?"
           class="placeholderStyle"
         />
@@ -57,7 +58,7 @@ function saveTaskHandler() {
   emit("saveTask");
 }
 function removeModel() {
-  emit("closeAddTask",saveForm);
+  emit("closeAddTask", saveForm);
 }
 function cancleTask() {
   emit("taskCancled");
@@ -73,6 +74,7 @@ function cancleTask() {
   border-radius: 4px;
   cursor: pointer;
 }
+
 .cancleSaveStyle:hover {
   color: white;
   background-color: rgb(136, 136, 136);
@@ -81,7 +83,10 @@ function cancleTask() {
 ::placeholder {
   color: #d1d1d1;
   opacity: 4px;
+  font-size: 25px;
+  /* line-height: 80px; */
 }
+
 .model {
   position: absolute; /* Stay in place */
   z-index: 9; /* Sit on top */
@@ -101,13 +106,13 @@ function cancleTask() {
 }
 .modal-content {
   background-color: #fefefe;
-  margin: 26% 0% 15% 28%; /* 15% from the top and centered */
-
-  padding-top: 10px;
+  margin-top:350px ;
+ margin-left:460px;
   border: 1px solid #888;
-  width: 444px; /* Could be more or less, depending on screen size */
+  max-width: 444px; /* Could be more or less, depending on screen size */
   border-radius: 5px;
-  height: 100px;
+  height: 110px;
+  /* margin:auto; */
 }
 input {
   outline: 0;

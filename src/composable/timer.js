@@ -42,6 +42,15 @@ const timer = (form) => {
         }, 1000);
     }
 
+    function resetTimer(){
+         // destroy the setInterval()
+        clearInterval(countDownInterval);
+        hours.value = '';
+        minutes.value = '';
+        seconds.value = '';
+
+    }
+
     // longbreak value on ui
     function longBreakVal() {
         const longBreakVal = localStorage.getItem('longBreak');
@@ -146,7 +155,7 @@ const timer = (form) => {
         longBreakVal,
         stop,
         resume,
-        hours, minutes, seconds, startTimer, setCountDown, hrsMinconvg
+        hours, minutes, seconds, startTimer, setCountDown, hrsMinconvg,resetTimer
     }
 
 }
